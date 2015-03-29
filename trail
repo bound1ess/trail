@@ -3,6 +3,8 @@
 selector = ARGV.size > 0 ? "#{ARGV.first}/*" : '**/*'
 fix = (ARGV.size > 1 and ARGV.last == 'fix')
 
+puts "Scanning #{selector}..."
+
 Dir[selector].each do |path|
     next if not File.file?(path)
 
@@ -11,7 +13,7 @@ Dir[selector].each do |path|
     file.each_line do |line|
         line_number += 1
 
-        if line.size != line.rstrip.size + 1 # Don't forget about the newline character.
+        if line.size != line.rstrip.size + $/.size # Don't forget about the newline character.
             puts "Trailing whitespace(s) in #{path}, line #{line_number}."
             changed = true
         end
@@ -25,5 +27,7 @@ Dir[selector].each do |path|
         File.write(path, new.join($/) + $/)
     end
 end
+
+puts 'Done!'
 
 # vim: syntax=ruby
