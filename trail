@@ -1,7 +1,22 @@
 #!/usr/bin/env ruby
 
-Dir['**/*'].each do |path|
-    puts path
+selector = ARGV.size > 0 ? "#{ARGV.first}/*" : '**/*'
+
+Dir[selector].each do |path|
+    next if not File.file?(path)
+
+    file, line_number, new = File.read(path), 0, Array.new
+
+    file.each_line do |line|
+        line_number += 1
+
+        if line.size != line.rstrip.size + 1 # Don't forget about the newline character.
+            puts "Trailing whitespace(s) in #{path}, line #{line_number}."
+            new.push(line.rstrip)
+        else
+            new.push(line)
+        end
+    end
 end
 
 # vim: syntax=ruby
