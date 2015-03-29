@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 selector = ARGV.size > 0 ? "#{ARGV.first}/*" : '**/*'
-fix = ARGV.size > 1 ? ARGV[1] == 'fix' : false
+fix = (ARGV.size > 1 and ARGV.last == 'fix')
 
 Dir[selector].each do |path|
     next if not File.file?(path)
@@ -13,11 +13,10 @@ Dir[selector].each do |path|
 
         if line.size != line.rstrip.size + 1 # Don't forget about the newline character.
             puts "Trailing whitespace(s) in #{path}, line #{line_number}."
-            new.push(line.rstrip)
             changed = true
-        else
-            new.push(line)
         end
+
+        new.push(line.rstrip)
     end
 
     if fix and changed
