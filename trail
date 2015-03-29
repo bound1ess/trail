@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
-puts "Hello, world!"
+Dir['**/*'].each do |path|
+    puts path
+end
 
 # vim: syntax=ruby
