@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-selector = ARGV.size > 0 ? "#{ARGV.first}/*" : '**/*'
+selector = ARGV.size > 0 ? "#{ARGV.first}/**/*" : '**/*'
 fix = (ARGV.size > 1 and ARGV.last == 'fix')
 
 puts "Scanning #{selector}..."
