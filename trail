@@ -1,6 +1,17 @@
 #!/usr/bin/env ruby
 
-selector = ARGV.size > 0 ? "#{ARGV.first}/**/*" : '**/*'
+if ARGV.size > 0
+    path = ARGV.first
+
+    if not path.start_with?('file:')
+        selector = path + '/**/*'
+    else
+        selector = path.gsub('file:', '')
+    end
+else
+    selector = '**/*'
+end
+
 fix = (ARGV.size > 1 and ARGV.last == 'fix')
 
 puts "Scanning #{selector}..."
