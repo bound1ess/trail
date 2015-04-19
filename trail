@@ -35,7 +35,7 @@ class LintErrorFinder
     end
 
     def search_dir(dir)
-        Dir[dir + '/**/*'].each { |path|
+        Dir[dir + '/*'].each { |path|
             path = File.join(@base_path, path) unless Pathname.new(path).absolute?
 
             if Dir.exists?(path)

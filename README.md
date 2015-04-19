@@ -11,6 +11,7 @@ sudo cp ./trail /usr/local/bin/trail
 ## Usage
 
 ```shell
+trail # assume CWD
 trail somefile
 trail somedir # recursively
 ```
