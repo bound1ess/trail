@@ -11,8 +11,6 @@ sudo cp ./trail /usr/local/bin/trail
 ## Usage
 
 ```shell
-trail # All files in current directory, recursively.
-trail src # All files in ./src
-trail src fix # Find and fix all issues.
-trail file:README.md # Check README.md file.
+trail somefile
+trail somedir # recursively
 ```
