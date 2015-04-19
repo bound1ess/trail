@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 class LintError
-    # attr_reader :file, :line
 
     def initialize(file, line)
         raise ArgumentError unless file.is_a?(String) and line.is_a?(Fixnum)
@@ -15,9 +14,10 @@ class LintError
 end
 
 class LintErrorFinder
+    attr_reader :messages
 
-    def initialize
-        @messages = Array.new
+    def initialize(base_path)
+        @messages, @base_path = Array.new, base_path
     end
 
     def search_file(file)
@@ -34,16 +34,15 @@ class LintErrorFinder
     end
 
     def search_dir(dir)
-        Dir[dir + '/**/*'].each { |file|
-            search_file(file)
+        Dir[dir + '/**/*'].each { |path|
+            path = File.join(@base_path, path)
+
+            if File.exists?(path)
+                search_file(path)
+            else
+                search_dir(path)
+            end
         }
-    end
-
-    def flush_messages
-        messages  = @messages
-        @messages = Array.new
-
-        messages
     end
 
     private
@@ -52,12 +51,17 @@ class LintErrorFinder
     end
 end
 
+# Grab input.
 if ARGV.empty?
-    puts 'Incorrect usage of Trail.'
-    exit
+    path = Dir.getwd # Assume CWD.
+else
+    path = File.expand_path(ARGV.first)
 end
 
-path, finder = ARGV.first, LintErrorFinder.new
+finder = LintErrorFinder.new(path)
+
+# Let the user know what's going on here.
+puts "Scanning #{path}..."
 
 # Get messages.
 if Dir.exists?(path)
@@ -69,7 +73,7 @@ else
     exit
 end
 
-messages = finder.flush_messages
+messages = finder.messages
 
 # Display found errors.
 if messages.empty?
