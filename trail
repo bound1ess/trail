@@ -1,44 +1,81 @@
 #!/usr/bin/env ruby
 
-if ARGV.size > 0
-    path = ARGV.first
+class LintError
+    # attr_reader :file, :line
 
-    if not path.start_with?('file:')
-        selector = path + '/**/*'
-    else
-        selector = path.gsub('file:', '')
+    def initialize(file, line)
+        raise ArgumentError unless file.is_a?(String) and line.is_a?(Fixnum)
+
+        @file, @line = file, line
     end
+
+    def to_s
+        "Found trailing whitespace(s) in #{@file}, line #{@line.to_s}."
+    end
+end
+
+class LintErrorFinder
+
+    def initialize
+        @messages = Array.new
+    end
+
+    def search_file(file)
+        line_number = 0
+        extra = $/.size
+
+        File.read(file).each_line { |line|
+            line_number += 1
+
+            if not (line.rstrip.size + extra) == line.size
+                add_message(file, line_number)
+            end
+        }
+    end
+
+    def search_dir(dir)
+        Dir[dir + '/**/*'].each { |file|
+            search_file(file)
+        }
+    end
+
+    def flush_messages
+        messages  = @messages
+        @messages = Array.new
+
+        messages
+    end
+
+    private
+    def add_message(file, line)
+        @messages.push LintError.new(file, line)
+    end
+end
+
+if ARGV.empty?
+    puts 'Incorrect usage of Trail.'
+    exit
+end
+
+path, finder = ARGV.first, LintErrorFinder.new
+
+# Get messages.
+if Dir.exists?(path)
+    finder.search_dir(path)
+elsif File.exists?(path)
+    finder.search_file(path)
 else
-    selector = '**/*'
+    puts 'Invalid path argument was supplied.'
+    exit
 end
 
-fix = (ARGV.size > 1 and ARGV.last == 'fix')
+messages = finder.flush_messages
 
-puts "Scanning #{selector}..."
-
-Dir[selector].each do |path|
-    next if not File.file?(path)
-
-    file, line_number, new, changed = File.read(path), 0, Array.new, false
-
-    file.each_line do |line|
-        line_number += 1
-
-        if line.size != line.rstrip.size + $/.size # Don't forget about the newline character.
-            puts "Trailing whitespace(s) in #{path}, line #{line_number}."
-            changed = true
-        end
-
-        new.push(line.rstrip)
-    end
-
-    if fix and changed
-        puts "Fixing #{path} where needed..."
-
-        File.write(path, new.join($/) + $/)
+# Display found errors.
+if messages.empty?
+    puts 'Great job!'
+else
+    for message in messages
+        puts message
     end
 end
-
-puts 'Done!'
-
-# vim: syntax=ruby
