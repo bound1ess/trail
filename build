@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+echo "You'll be asked to enter your password."
+sudo cp ./trail /usr/local/bin/trail
+trail .
