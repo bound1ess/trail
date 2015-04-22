@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'pathname'
+require 'open3'
 
 class LintError
 
@@ -41,7 +42,7 @@ class LintErrorFinder
             if Dir.exists?(path)
                 search_dir(path)
             else
-                search_file(path)
+                search_file(path) if not_binary?(path)
             end
         }
     end
@@ -49,6 +50,12 @@ class LintErrorFinder
     private
     def add_message(file, line)
         @messages.push LintError.new(file, line)
+    end
+
+    def not_binary?(file)
+        type, status = Open3.capture2e('file', file)
+
+        status.success? and type.include?('text')
     end
 end
 
