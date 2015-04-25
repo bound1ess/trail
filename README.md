@@ -1,4 +1,4 @@
-# Trail 0.1.1
+# Trail 0.1.2
 
 ## Installation
 

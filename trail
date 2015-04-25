@@ -20,6 +20,7 @@ class LintErrorFinder
 
     def initialize(base_path)
         @messages, @base_path = Array.new, base_path
+        @ignore = ['vendor', 'bower_components', 'node_modules']
     end
 
     def search_file(file)
@@ -40,7 +41,7 @@ class LintErrorFinder
             path = File.join(@base_path, path) unless Pathname.new(path).absolute?
 
             if Dir.exists?(path)
-                search_dir(path)
+                search_dir(path) if not should_ignore?(path)
             else
                 search_file(path) if not_binary?(path)
             end
@@ -56,6 +57,14 @@ class LintErrorFinder
         type, status = Open3.capture2e('file', file)
 
         status.success? and type.include?('text')
+    end
+
+    def should_ignore?(path)
+        @ignore.each do |dir|
+            return true if path.include?(dir)
+        end
+
+        false
     end
 end
 
