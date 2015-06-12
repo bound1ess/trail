@@ -68,6 +68,9 @@ class LintErrorFinder
     end
 end
 
+# Start execution.
+start = Time.now
+
 # Grab input.
 if ARGV.empty?
     path = Dir.getwd # Assume CWD.
@@ -100,3 +103,6 @@ else
         puts message
     end
 end
+
+# Finish.
+puts "Took #{(Time.now - start) * 1000.0} milliseconds to process."
