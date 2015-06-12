@@ -105,4 +105,4 @@ else
 end
 
 # Finish.
-puts "Took #{(Time.now - start) * 1000.0} milliseconds to process."
+puts "Took #{(Time.now - start).round(2)} second(s) to process."
