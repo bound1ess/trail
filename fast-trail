@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from binaryornot.check import is_binary
-import os, subprocess
+import os, subprocess, time
 
 def get_storage_path():
   return os.path.join(os.getcwd(), '.trail')
@@ -53,11 +53,24 @@ def update_checksum(file_path, checksum):
   handler.write(checksum)
   handler.close()
 
+def format_green_text(text):
+  return '\033[1;32m%s\033[0m' % text
+
+def format_red_text(text):
+  return '\033[1;31m%s\033[0m' % text
+
+def format_yellow_text(text):
+  return '\033[1;33m%s\033[0m' % text
+
+def format_blue_text(text):
+  return '\033[1;34m%s\033[0m' % text
+
 # first, ensure that the required directory exists
 if not os.path.exists(get_storage_path()):
   os.mkdir(get_storage_path())
 
 accepted_files = []
+start_time = time.time()
 
 # then, collect files
 for dir_path, subdir_list, file_list in os.walk(os.getcwd()):
@@ -83,8 +96,13 @@ for file_path in accepted_files:
 
 # now display the errors to the user
 for file_path, errors in found_errors:
-  print('Found %d error(s) in %s:' % (len(errors), file_path))
+  error_message = format_red_text('%d error(s)' % len(errors))
+  print('Found %s in %s:' % (error_message, format_green_text(file_path)))
   for line, line_number in errors:
-    print('  line %d [%s]' % (line_number, line.strip()))
+    line_number_message = format_blue_text(str(line_number))
+    print('  line %s [%s].' % (line_number_message, format_yellow_text(line.strip())))
+
+elapsed_time = time.time() - start_time
+print('Elapsed time: %.3f second(s).' % elapsed_time)
 
 # vim: set syntax=python:
