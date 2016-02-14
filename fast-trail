@@ -2,8 +2,17 @@
 from binaryornot.check import is_binary
 import os, subprocess
 
+def get_storage_path():
+  return os.path.join(os.getcwd(), '.trail')
+
+def transform_path(path):
+  return path.replace('/', '_')
+
+def get_checksum_file_path(file_path):
+  return os.path.join(get_storage_path(), transform_path(file_path))
+
 def accept_path(path):
-  black_list = ['vendor', 'node_modules', 'bower_components', '.git']
+  black_list = ['vendor', 'node_modules', 'bower_components', '.git', '.trail']
   for item in black_list:
     if item in path:
       return False
@@ -12,15 +21,45 @@ def accept_path(path):
 def accept_file(file_path):
   return not is_binary(file_path)
 
-def transform_path(path):
-  return path.replace('/', '_')
-
 def calculate_md5_sum(path):
   out = subprocess.check_output('md5sum %s' % path, shell=True).decode('utf-8')
   return out.split(' ')[0]
 
+def check_file(file_path):
+  handler = open(file_path, 'r')
+  errors = []
+  line_idx = 1
+  for line in handler:
+    if not (line == line.rstrip() + '\n'):
+      errors.append([line, line_idx])
+    line_idx += 1
+  handler.close()
+  return errors
+
+def file_was_changed(file_path, checksum):
+  checksum_file_path = get_checksum_file_path(file_path)
+  # check if this file is new
+  if not os.path.exists(checksum_file_path):
+    return True
+  else:
+    handler = open(checksum_file_path, 'r')
+    old_checksum = handler.read()
+    handler.close()
+    return not (checksum == old_checksum)
+
+def update_checksum(file_path, checksum):
+  checksum_file_path = get_checksum_file_path(file_path)
+  handler = open(checksum_file_path, 'w')
+  handler.write(checksum)
+  handler.close()
+
+# first, ensure that the required directory exists
+if not os.path.exists(get_storage_path()):
+  os.mkdir(get_storage_path())
+
 accepted_files = []
 
+# then, collect files
 for dir_path, subdir_list, file_list in os.walk(os.getcwd()):
   if not accept_path(dir_path):
     continue
@@ -29,9 +68,23 @@ for dir_path, subdir_list, file_list in os.walk(os.getcwd()):
     if accept_file(file_path):
       accepted_files.append(file_path)
 
-print('Found %d files' % len(accepted_files))
+found_errors = []
 
+# now collect errors
 for file_path in accepted_files:
-  print(calculate_md5_sum(file_path))
+  checksum = calculate_md5_sum(file_path)
+  if file_was_changed(file_path, checksum):
+    # check for errors, update the sum
+    errors = check_file(file_path)
+    if len(errors) == 0:
+      update_checksum(file_path, checksum)
+    else:
+      found_errors.append([file_path, errors])
+
+# now display the errors to the user
+for file_path, errors in found_errors:
+  print('Found %d error(s) in %s:' % (len(errors), file_path))
+  for line, line_number in errors:
+    print('  line %d [%s]' % (line_number, line.strip()))
 
 # vim: set syntax=python:
