@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+echo "you will be asked to provide your password"
+sudo cp fast-trail /usr/local/bin/fast-trail
+fast-trail
