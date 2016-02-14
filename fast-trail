@@ -1,0 +1,37 @@
+#!/usr/bin/env python3
+from binaryornot.check import is_binary
+import os, subprocess
+
+def accept_path(path):
+  black_list = ['vendor', 'node_modules', 'bower_components', '.git']
+  for item in black_list:
+    if item in path:
+      return False
+  return True
+
+def accept_file(file_path):
+  return not is_binary(file_path)
+
+def transform_path(path):
+  return path.replace('/', '_')
+
+def calculate_md5_sum(path):
+  out = subprocess.check_output('md5sum %s' % path, shell=True).decode('utf-8')
+  return out.split(' ')[0]
+
+accepted_files = []
+
+for dir_path, subdir_list, file_list in os.walk(os.getcwd()):
+  if not accept_path(dir_path):
+    continue
+  for file_name in file_list:
+    file_path = os.path.join(dir_path, file_name)
+    if accept_file(file_path):
+      accepted_files.append(file_path)
+
+print('Found %d files' % len(accepted_files))
+
+for file_path in accepted_files:
+  print(calculate_md5_sum(file_path))
+
+# vim: set syntax=python:
