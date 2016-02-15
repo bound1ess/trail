@@ -21,7 +21,7 @@ def accept_path(path):
 def accept_file(file_path):
   return not is_binary(file_path)
 
-def calculate_md5_sum(path):
+def calculate_checksum(path):
   out = subprocess.check_output('md5sum %s' % path, shell=True).decode('utf-8')
   return out.split(' ')[0]
 
@@ -85,7 +85,7 @@ found_errors = []
 
 # now collect errors
 for file_path in accepted_files:
-  checksum = calculate_md5_sum(file_path)
+  checksum = calculate_checksum(file_path)
   if file_was_changed(file_path, checksum):
     # check for errors, update the sum
     errors = check_file(file_path)
